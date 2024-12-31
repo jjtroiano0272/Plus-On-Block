@@ -5,6 +5,7 @@ interface SettingsContextType {
   appSettings: {
     inputType: "fightStick" | "gamePad" | "leverless" | "custom";
     inputConfig: string[][];
+    loopOrPlayOnce: "loop" | "once";
   };
   appSettingsInitialized: boolean;
   setSettings: (key: string, value: any) => void;
@@ -17,6 +18,7 @@ const defaultValues: SettingsContextType = {
       ["LP", "MP", "HP", "HP+HK"], // top row of buttons
       ["LK", "MK", "HK", "MP+MK"], // bottom row of buttons
     ],
+    loopOrPlayOnce: "loop",
   },
   appSettingsInitialized: false,
   setSettings: () => {

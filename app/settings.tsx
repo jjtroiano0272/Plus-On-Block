@@ -9,7 +9,13 @@ import {
 } from "react-native";
 import React, { useContext, useState } from "react";
 import ScreenWrapper from "@/components/ScreenWrapper";
-import { IconButton, Switch, useTheme } from "react-native-paper";
+import {
+  IconButton,
+  SegmentedButtons,
+  Switch,
+  ToggleButton,
+  useTheme,
+} from "react-native-paper";
 import { hp, wp } from "@/helpers/common";
 //TODO  import { useTimers } from "@/context/TimerContext";
 import { AppSettingsContext } from "@/context/AppSettings";
@@ -31,6 +37,8 @@ import { DraggableGridExample } from "@/components/DraggableGridExample";
 
 const Settings = () => {
   const theme = useTheme();
+
+  const [loopOrPlay, setLoopOrPlay] = useState("loop");
 
   const { appSettings, setSettings } = useContext(AppSettingsContext);
 
@@ -139,6 +147,28 @@ const Settings = () => {
                 style={{ height: "100%", resizeMode: "contain" }}
               />
             </TouchableOpacity>
+          </View>
+
+          {/* Straight-shot or Loop */}
+          <View
+            style={[
+              styles.row,
+              { backgroundColor: theme.colors.elevation.level3 },
+            ]}
+          >
+            <View style={[styles.rowIcon, { backgroundColor: "#FE9400" }]}>
+              <IconButton iconColor="#fff" icon="eye" size={20} />
+            </View>
+            {/* <Text style={styles.rowLabel}>Language</Text> */}
+            <Text style={{ color: theme.colors.secondary }}>
+              Play once/loop video
+            </Text>
+            <View style={styles.rowSpacer} />
+            <Switch
+              style={{ marginRight: 10 }}
+              value={appSettings?.loopOrPlayOnce === "loop" ? true : false} // Default to true if undefined
+              onValueChange={(value) => setSettings("loopOrPlay", value)}
+            />
           </View>
         </View>
       </View>

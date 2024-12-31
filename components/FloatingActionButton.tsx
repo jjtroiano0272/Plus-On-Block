@@ -9,7 +9,6 @@ import Animated, {
   withTiming,
   SharedValue,
 } from "react-native-reanimated";
-
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const SPRING_CONFIG = {
@@ -20,15 +19,7 @@ const SPRING_CONFIG = {
 
 const OFFSET = 60;
 
-const FloatingActionButton = ({
-  isExpanded,
-  index,
-  buttonText: buttonLetter,
-}: {
-  isExpanded: SharedValue<boolean>;
-  index: number;
-  buttonText: string;
-}) => {
+const FloatingActionButton = ({ isExpanded, index, buttonText }) => {
   const animatedStyles = useAnimatedStyle(() => {
     const moveValue = isExpanded.value ? OFFSET * index : 0;
     const translateValue = withSpring(-moveValue, SPRING_CONFIG);
@@ -48,85 +39,17 @@ const FloatingActionButton = ({
 
   return (
     <AnimatedPressable style={[animatedStyles, styles.shadow, styles.button]}>
-      <Animated.Text style={styles.content}>{buttonLetter}</Animated.Text>
+      <Animated.Text style={styles.content}>{buttonText}</Animated.Text>
     </AnimatedPressable>
   );
 };
 
-export default function App() {
-  const isExpanded = useSharedValue(false);
-
-  const handlePress = () => {
-    isExpanded.value = !isExpanded.value;
-  };
-
-  const plusIconStyle = useAnimatedStyle(() => {
-    const moveValue = interpolate(Number(isExpanded.value), [0, 1], [0, 2]);
-    const translateValue = withTiming(moveValue);
-    const rotateValue = isExpanded.value ? "45deg" : "0deg";
-
-    return {
-      transform: [
-        { translateX: translateValue },
-        { rotate: withTiming(rotateValue) },
-      ],
-    };
-  });
-
-  return (
-    <SafeAreaView>
-      <View style={styles.mainContainer}>
-        <View style={styles.buttonContainer}>
-          <AnimatedPressable
-            onPress={handlePress}
-            style={[styles.shadow, mainButtonStyles.button]}
-          >
-            <Animated.Text style={[plusIconStyle, mainButtonStyles.content]}>
-              +
-            </Animated.Text>
-          </AnimatedPressable>
-          <FloatingActionButton
-            isExpanded={isExpanded}
-            index={1}
-            buttonText={"M"}
-          />
-          <FloatingActionButton
-            isExpanded={isExpanded}
-            index={2}
-            buttonText={"W"}
-          />
-          <FloatingActionButton
-            isExpanded={isExpanded}
-            index={3}
-            buttonText={"S"}
-          />
-        </View>
-      </View>
-    </SafeAreaView>
-  );
-}
-
-const mainButtonStyles = StyleSheet.create({
-  button: {
-    zIndex: 1,
-    height: 56,
-    width: 56,
-    borderRadius: 100,
-    backgroundColor: "#b58df1",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  content: {
-    fontSize: 24,
-    color: "#f8f9ff",
-  },
-});
+export default FloatingActionButton;
 
 const styles = StyleSheet.create({
   mainContainer: {
     position: "relative",
-    height: 260,
+    // height: 260,
     width: "100%",
     display: "flex",
     justifyContent: "flex-end",

@@ -15,8 +15,8 @@ const CharacterSelect = () => {
 
   const onPress = (charSelected: string) => {
     console.log(`charSelected: ${JSON.stringify(charSelected, null, 2)}`);
-    router.push({
-      pathname: "/quiz",
+    router.replace({
+      pathname: "/(main)/feed", // /quiz
       params: {
         charSelected: charSelected,
       },
