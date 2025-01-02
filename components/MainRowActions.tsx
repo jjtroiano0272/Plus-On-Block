@@ -1,3 +1,4 @@
+import * as Haptics from "expo-haptics";
 import {
   View,
   Text,
@@ -6,6 +7,9 @@ import {
   ScrollView,
   FlatList,
   Dimensions,
+  TextInput,
+  useColorScheme,
+  Pressable,
 } from "react-native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { SymbolView } from "expo-symbols";
@@ -14,23 +18,50 @@ import Carousel, {
   ICarouselInstance,
   Pagination,
 } from "react-native-reanimated-carousel";
-import { useSharedValue } from "react-native-reanimated";
-import { wp } from "@/helpers/common";
+import Animated, {
+  Extrapolate,
+  Extrapolation,
+  interpolate,
+  SharedValue,
+  useAnimatedGestureHandler,
+  useAnimatedProps,
+  useAnimatedStyle,
+  useDerivedValue,
+  useSharedValue,
+} from "react-native-reanimated";
+import { formatFrameAdv, wp } from "@/helpers/common";
 import MySlider from "./MySlider";
+import {
+  Gesture,
+  GestureDetector,
+  GestureHandlerRootView,
+  PanGestureHandler,
+  State,
+  TapGestureHandler,
+} from "react-native-gesture-handler";
+import { Slider } from "react-native-awesome-slider";
+import { useAnswers } from "@/context/AnswerContext";
 
 const options = Array.from({ length: 20 + 1 }, (_, i) => i - 10);
 const ITEM_WIDTH = 80; // Item width + marginHorizontal * 2
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
+const SLIDER_WIDTH = 300; // Width of the slider track
+const SLIDER_HEIGHT = 40; // Height of the slider track
+const THUMB_SIZE = 30; // Size of the slider thumb
+
 interface Props {
   onPress: (index: any) => void;
+  progress?: SharedValue<number>;
 }
 
 const MainRowActions = ({ onPress }: Props) => {
+  const { submittedAnswer, correctAnswer, setSubmittedAnswer } = useAnswers();
+
   const flatListRef = useRef<FlatList<number>>(null);
   const [currentIndex, setCurrentIndex] = useState(10);
   const ref = React.useRef<ICarouselInstance>(null);
-  const progress = useSharedValue<number>(0);
+  //   const progress = useSharedValue<number>(0);
   const onPressPagination = (index: number) => {
     ref.current?.scrollTo({
       /**
@@ -107,32 +138,17 @@ const MainRowActions = ({ onPress }: Props) => {
     }
   }, []);
 
+  const progress = useSharedValue(50);
+  const min = useSharedValue(0);
+  const max = useSharedValue(100);
+
   return (
-    <View style={styles.container}>
-      {/* <TouchableOpacity onPress={onPress} style={styles.mainSymbolContainer}>
-        <SymbolView
-          size={90}
-          type="hierarchical"
-          animationSpec={{ effect: { type: "bounce" } }}
-          name={"circle"}
-          tintColor={"white"}
-        />
-      </TouchableOpacity> */}
-
-      {/* =====================================================================================
-        === C =============================================
-        ========================================================================================= */}
-      {/* {options.map((item) => (
-          <SymbolView
-            key={item}
-            name="0.circle.fill"
-            size={40}
-            type="hierarchical"
-            tintColor="white"
-          />
-        ))}
-      </ScrollView> */}
-
+    <Pressable
+      style={styles.container}
+      onPress={() => {
+        console.log("\x1b[32m" + "hi");
+      }}
+    >
       {/* <FlatList
         // contentContainerStyle={styles.scrollContent}
         style={styles.scrollOverlay}
@@ -169,45 +185,40 @@ const MainRowActions = ({ onPress }: Props) => {
         />
       </TouchableOpacity> */}
 
-      {/* <Carousel
-        data={options}
-        defaultIndex={10}
-        ref={ref}
-        width={Dimensions.get("window").width}
-        style={{ justifyContent: "center", alignItems: "center" }}
-        containerStyle={{ justifyContent: "center", alignItems: "center" }}
-        height={Dimensions.get("window").width / 4}
-        onProgressChange={progress}
-        mode="parallax"
-        renderItem={({ index }) => (
-          <TouchableOpacity
-            onPress={() => {
-              console.log(index);
-            }}
-            style={{
-              flex: 1,
-              height: 90,
-              width: 90,
-              backgroundColor: "#ccc",
-              justifyContent: "center",
-              alignItems: "center",
-              borderRadius: 200,
-            }}
-          >
-            <Text style={{ textAlign: "center", fontSize: 30 }}>{index}</Text>
-          </TouchableOpacity>
-        )}
-      /> */}
-      <MySlider data={options} onPressItem={handlePressItem} />
-
-      {/* <Pagination.Basic
+      {/* <MySlider data={options} onPressItem={handlePressItem} /> */}
+      <Slider
         progress={progress}
-        data={options}
-        dotStyle={{ backgroundColor: "rgba(0,0,0,0.2)", borderRadius: 50 }}
-        containerStyle={{ gap: 5, marginTop: 10 }}
-        onPress={onPressPagination}
-      /> */}
-    </View>
+        minimumValue={min}
+        maximumValue={max}
+        onHapticFeedback={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        }}
+        hapticMode="step"
+        steps={20}
+        bubbleContainerStyle={{
+          height: 100,
+          width: 100,
+        }}
+        bubbleTextStyle={{ fontSize: 40 }}
+        bubble={(s) => formatFrameAdv(s)}
+        bubbleTranslateY={-50}
+        bubbleWidth={120}
+        forceSnapToStep
+        containerStyle={{
+          width: SCREEN_WIDTH * 0.8,
+        }}
+        style={{
+          backgroundColor: "#ccc",
+          borderRadius: 15,
+          padding: 20,
+        }}
+        // renderMark={({ index }) => (
+        //   <View style={styles.mark}>
+        //     <Text>{index * 10}</Text>
+        //   </View>
+        // )}
+      />
+    </Pressable>
   );
 };
 
@@ -216,7 +227,7 @@ export default MainRowActions;
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    flexDirection: "row",
+    // flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     position: "absolute",
@@ -242,5 +253,43 @@ const styles = StyleSheet.create({
     top: "50%",
     left: "50%",
     transform: [{ translateX: -45 }, { translateY: -45 }], // Center SymbolView (half of its size)
+  },
+  sliderTrack: {
+    width: SLIDER_WIDTH,
+    height: 50,
+    backgroundColor: "#82cab2",
+    borderRadius: 25,
+    justifyContent: "center",
+    padding: 5,
+  },
+  sliderHandle: {
+    width: 40,
+    height: 40,
+    backgroundColor: "#f8f9ff",
+    borderRadius: 20,
+    position: "absolute",
+    left: 5,
+  },
+  boxWidthText: {
+    textAlign: "center",
+    fontSize: 18,
+  },
+  slider: {
+    width: SLIDER_WIDTH,
+    height: SLIDER_HEIGHT,
+    backgroundColor: "#ddd",
+    borderRadius: 20,
+    justifyContent: "center",
+  },
+  thumb: {
+    width: THUMB_SIZE,
+    height: THUMB_SIZE,
+    borderRadius: THUMB_SIZE / 2,
+    backgroundColor: "#4CAF50",
+    position: "absolute",
+  },
+  valueText: {
+    fontSize: 18,
+    marginBottom: 20,
   },
 });

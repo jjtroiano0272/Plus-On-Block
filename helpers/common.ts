@@ -66,3 +66,6 @@ export const getImagePath = (path: string) => {
 
   return res;
 };
+
+export const printFrameAdvantage = (num: number): string =>
+  num >= 0 ? `+${num}` : num.toString();

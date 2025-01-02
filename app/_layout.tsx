@@ -17,6 +17,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PaperProvider } from "react-native-paper";
 import tamaguiConfig from "@/tamagui.config";
 import { AppSettingsContextProvider } from "@/context/AppSettings";
+import { AnswerContext, AnswerProvider } from "@/context/AnswerContext";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -44,7 +45,9 @@ export default function _layout() {
           <ThemeProvider
             value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
           >
-            <MainLayout />
+            <AnswerProvider>
+              <MainLayout />
+            </AnswerProvider>
           </ThemeProvider>
         </AppSettingsContextProvider>
       </PaperProvider>
