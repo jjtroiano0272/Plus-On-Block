@@ -1,5 +1,4 @@
 import { locationImage } from "@/constants/catalinData";
-import { FRAME_DATA } from "@/constants/frameData";
 import { Entypo } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import { useEvent } from "expo";

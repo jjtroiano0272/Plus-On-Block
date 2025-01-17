@@ -3,9 +3,11 @@ import React, { createContext, ReactNode, useEffect, useState } from "react";
 
 interface SettingsContextType {
   appSettings: {
+    soundOn: boolean;
     inputType: "fightStick" | "gamePad" | "leverless" | "custom";
     inputConfig: string[][];
     loopOrPlayOnce: "loop" | "once";
+    notation: "default" | "numpad";
   };
   appSettingsInitialized: boolean;
   setSettings: (key: string, value: any) => void;
@@ -13,12 +15,14 @@ interface SettingsContextType {
 
 const defaultValues: SettingsContextType = {
   appSettings: {
+    soundOn: true,
     inputType: "fightStick",
     inputConfig: [
       ["LP", "MP", "HP", "HP+HK"], // top row of buttons
       ["LK", "MK", "HK", "MP+MK"], // bottom row of buttons
     ],
     loopOrPlayOnce: "loop",
+    notation: "default",
   },
   appSettingsInitialized: false,
   setSettings: () => {

@@ -28,4 +28,9 @@ export const Colors = {
 export const palette = {
   plus: "#FA9F30",
   negative: "#035E7B",
+
+  orangePeel: "#FA9F30FF",
+  lapisLazuli: "#035E7BFF",
+  darkFreen: "#002E2CFF",
+  eggplant: "#713E5AFF",
 };

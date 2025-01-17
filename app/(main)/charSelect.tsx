@@ -1,80 +1,113 @@
 import {
+  Canvas,
+  Blur,
+  Image as SkiaImage,
+  ColorMatrix,
+  useImage,
+} from "@shopify/react-native-skia";
+import {
+  SoftLightBlend,
+  Emboss,
+  Earlybird,
+  Invert,
+  RadialGradient,
+  Grayscale,
+} from "react-native-image-filter-kit";
+import {
   View,
   Image,
   TouchableOpacity,
   Button,
   StyleSheet,
   FlatList,
+  Text,
+  Pressable,
 } from "react-native";
 import React from "react";
 import { CHARACTER_AVATARS } from "@/constants/charAvatars";
 import { useRouter } from "expo-router";
 import ScreenWrapper from "@/components/ScreenWrapper";
-import { ThemedText } from "@/components/ThemedText";
+import { IconButton, useTheme } from "react-native-paper";
+import { useAnswers } from "@/context/AnswerContext";
+import Picker from "@/components/Picker__Miron/Picker";
 
+const avatarSize = 85;
 const CharacterSelect = () => {
+  const theme = useTheme();
   const router = useRouter();
+  const { setSelectedCharacter } = useAnswers();
 
-  const onPress = (charSelected: string) => {
-    console.log(`charSelected: ${JSON.stringify(charSelected, null, 2)}`);
+  const selectCharacter = (charSelected: string) => {
     router.replace({
       pathname: "/(main)/feed",
       params: {
         charSelected: charSelected,
       },
     });
+
+    setSelectedCharacter(charSelected);
   };
+
+  let debug = false;
+  if (debug) {
+    return (
+      <>
+        {/* <IndicatorExample /> */}
+        <Picker />
+      </>
+    );
+  }
+
   return (
     <ScreenWrapper>
-      {/* <View style={styles.container}> */}
-      {/* {CHARACTER_AVATARS.map((item, index) => (
-          <TouchableOpacity
-            key={index}
-            onPress={() => onPress(item.name)}
-            style={{
-              borderRadius: 10,
-              borderColor: "gray",
-              borderWidth: 3,
-            }}
-          >
-            <Image
-              source={item.image}
-              style={{ height: 100, width: 100, resizeMode: "cover" }}
-            />
-          </TouchableOpacity>
-        ))} */}
-      {/* </View> */}
-
-      <ThemedText>Who are you playing as?</ThemedText>
+      <View
+        style={{ justifyContent: "center", alignItems: "center", padding: 12 }}
+      >
+        <Text style={{ fontSize: 36, color: theme.colors.onBackground }}>
+          Who are you playing as?
+        </Text>
+      </View>
       <FlatList
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.container}
+        numColumns={4}
         data={CHARACTER_AVATARS}
-        ListFooterComponent={
-          <Button onPress={() => router.push("/settings")} title="Settings" />
-        }
-        ListFooterComponentStyle={{
-          // flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
         renderItem={({ item, index }) => (
-          <TouchableOpacity
+          <Pressable
             key={index}
-            onPress={() => onPress(item.name)}
-            style={{
-              borderRadius: 10,
-              borderColor: "gray",
-              borderWidth: 3,
-            }}
+            onPress={() =>
+              item.name === "Ryu" ? selectCharacter(item.name) : null
+            }
+            style={styles.avatarContainer}
           >
-            <Image
-              source={item.image}
-              style={{ height: 100, width: 100, resizeMode: "cover" }}
-            />
-          </TouchableOpacity>
+            {item.name !== "Ryu" ? (
+              <>
+                <Image
+                  source={item.image}
+                  style={[styles.avatar, { tintColor: "#ccc" }]}
+                />
+                <Image
+                  source={item.image}
+                  style={[
+                    styles.avatar,
+                    { position: "absolute", opacity: 0.3 },
+                  ]}
+                />
+              </>
+            ) : (
+              <Image source={item.image} style={styles.avatar} />
+            )}
+          </Pressable>
         )}
       />
+
+      <View style={styles.footer}>
+        <IconButton
+          onPress={() => router.push("/settings")}
+          icon="cog-outline"
+          size={36}
+        />
+      </View>
     </ScreenWrapper>
   );
 };
@@ -88,5 +121,22 @@ const styles = StyleSheet.create({
     gap: 10,
     justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  footer: {
+    justifyContent: "flex-end",
+    alignItems: "flex-end",
+    paddingVertical: 36, // Add padding to the footer
+    paddingHorizontal: 20,
+  },
+  avatar: {
+    height: avatarSize,
+    width: avatarSize,
+    resizeMode: "cover",
+  },
+  avatarContainer: {
+    borderRadius: 10,
+    borderColor: "gray",
+    borderWidth: 3,
   },
 });

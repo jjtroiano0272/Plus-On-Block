@@ -10,12 +10,12 @@ import Animated, {
 
 interface Props {
   isExpanded: SharedValue<boolean>;
-  children: ReactNode;
+  children?: ReactNode;
   viewKey: string;
-  style: ViewStyle;
+  style?: ViewStyle;
   duration?: number;
 }
-export default function AccordionItem({
+function AccordionItem({
   isExpanded,
   children,
   viewKey,
@@ -50,7 +50,17 @@ export default function AccordionItem({
   );
 }
 
+export default AccordionItem;
+
 const styles = StyleSheet.create({
-  animatedView: {},
-  wrapper: {},
+  wrapper: {
+    width: "100%",
+    position: "absolute",
+    display: "flex",
+    alignItems: "center",
+  },
+  animatedView: {
+    width: "100%",
+    overflow: "hidden",
+  },
 });

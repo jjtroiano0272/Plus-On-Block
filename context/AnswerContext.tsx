@@ -5,6 +5,14 @@ interface AnswerContextType {
   correctAnswer: string;
   setSubmittedAnswer: (arg: string) => void;
   setCorrectAnswer: (arg: string) => void;
+
+  numAnswered: number;
+  setNumAnswered: (arg: number) => void;
+  numCorrect: number;
+  setNumCorrect: (arg: number) => void;
+
+  selectedCharacter: string;
+  setSelectedCharacter: (arg: string) => void;
 }
 
 const AnswerContext = createContext<AnswerContextType>({
@@ -16,12 +24,23 @@ const AnswerContext = createContext<AnswerContextType>({
   setCorrectAnswer: () => {
     throw new Error("setCorrectAnswer not implemented");
   },
+
+  numAnswered: 0,
+  setNumAnswered: () => {},
+  numCorrect: 0,
+  setNumCorrect: () => {},
+
+  selectedCharacter: "",
+  setSelectedCharacter: () => {},
 });
 
 const AnswerProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState("light");
   const [submittedAnswer, setSubmittedAnswer] = useState("");
   const [correctAnswer, setCorrectAnswer] = useState("");
+  const [numAnswered, setNumAnswered] = useState(0); // set to 19 for debug purposes to test ads
+  const [numCorrect, setNumCorrect] = useState(0);
+  const [selectedCharacter, setSelectedCharacter] = useState("");
 
   return (
     <AnswerContext.Provider
@@ -30,6 +49,14 @@ const AnswerProvider = ({ children }: { children: ReactNode }) => {
         setSubmittedAnswer,
         correctAnswer,
         setCorrectAnswer,
+
+        numAnswered,
+        setNumAnswered,
+        numCorrect,
+        setNumCorrect,
+
+        selectedCharacter,
+        setSelectedCharacter,
       }}
     >
       {children}

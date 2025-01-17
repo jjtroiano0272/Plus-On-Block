@@ -14,10 +14,11 @@ import "react-native-reanimated";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { PaperProvider } from "react-native-paper";
+import { Avatar, IconButton, PaperProvider } from "react-native-paper";
 import tamaguiConfig from "@/tamagui.config";
 import { AppSettingsContextProvider } from "@/context/AppSettings";
-import { AnswerContext, AnswerProvider } from "@/context/AnswerContext";
+import { AnswerProvider } from "@/context/AnswerContext";
+import { View } from "react-native";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -69,7 +70,8 @@ const MainLayout = () => {
   // }, []);
 
   useEffect(() => {
-    router.replace("/charSelect");
+    // router.replace("/charSelect");
+    router.replace("/ONE_TO_ONE");
   }, []);
 
   useEffect(() => {
@@ -84,6 +86,32 @@ const MainLayout = () => {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" options={{ headerShown: false }} />
+      {/* <Stack.Screen
+        name="(main)/DEBUG"
+        options={{
+          // headerTransparent: true,
+          // headerBlurEffect: true,
+
+          headerShown: true,
+          headerStyle: {
+            backgroundColor: "#f4511e",
+          },
+          headerTitle: "correct/answered",
+          headerTintColor: "#fff",
+          headerTitleStyle: {
+            fontWeight: "bold",
+          },
+          headerLeft: () => <IconButton icon={"close"} />,
+          headerRight: () => (
+            <View>
+              <Avatar.Image
+                size={24}
+                source={require("@/assets/images/charAvatars/128px-SF6_Ryu_Icon.png")}
+              />
+            </View>
+          ),
+        }}
+      /> */}
       <Stack.Screen name="+not-found" />
     </Stack>
   );

@@ -1,5 +1,5 @@
 import { AppSettingsContext } from "@/context/AppSettings";
-import { wp } from "@/helpers/common";
+import { buttonIcons, wp } from "@/helpers/common";
 import {
   DndProvider,
   type ObjectWithId,
@@ -11,21 +11,11 @@ import React, { useContext } from "react";
 import { type FunctionComponent } from "react";
 import { StyleSheet, Text, View, Image } from "react-native";
 
-const GRID_SIZE = 3;
+const GRID_SIZE = 4;
 
 export const DraggableGridExample: FunctionComponent = () => {
   const { appSettings, setSettings } = useContext(AppSettingsContext);
   // const items: string[] = ["1", "2", "3", "4", "5", "6", "7", "8"];
-  const items: { move: string; image: string }[] = [
-    { move: "LP", image: require("@/assets/images/buttons/LP.png") },
-    { move: "MP", image: require("@/assets/images/buttons/MP.png") },
-    { move: "HP", image: require("@/assets/images/buttons/HP.png") },
-    { move: "LK", image: require("@/assets/images/buttons/LK.png") },
-    { move: "MK", image: require("@/assets/images/buttons/MK.png") },
-    { move: "HK", image: require("@/assets/images/buttons/HK.png") },
-    { move: "HP+HK", image: require("@/assets/images/buttons/HP.png") },
-    { move: "MP+MK", image: require("@/assets/images/buttons/HP.png") },
-  ];
 
   const numPadNotation = [
     { move: "5LP" },
@@ -48,21 +38,23 @@ export const DraggableGridExample: FunctionComponent = () => {
 
   return (
     <DndProvider>
-      <DraggableGrid
-        direction="row"
-        size={GRID_SIZE}
-        style={styles.grid}
-        onOrderChange={onGridOrderChange}
-      >
-        {items.map((item) => (
-          <Draggable key={item.move} id={item.move} style={styles.draggable}>
-            <Image
-              source={item?.image}
-              style={{ height: "100%", resizeMode: "contain" }}
-            />
-          </Draggable>
-        ))}
-      </DraggableGrid>
+      <View style={styles.wrapper}>
+        <DraggableGrid
+          direction="row"
+          size={GRID_SIZE}
+          style={styles.grid}
+          onOrderChange={onGridOrderChange}
+        >
+          {buttonIcons.map((item) => (
+            <Draggable key={item.move} id={item.move} style={styles.draggable}>
+              <Image
+                source={item?.image}
+                style={{ height: "100%", resizeMode: "contain" }}
+              />
+            </Draggable>
+          ))}
+        </DraggableGrid>
+      </View>
     </DndProvider>
   );
 };
@@ -110,5 +102,11 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "bold",
     fontSize: 32,
+  },
+  wrapper: {
+    paddingTop: 100,
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
   },
 });

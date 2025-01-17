@@ -1,3 +1,5 @@
+import RNPickerSelect from "react-native-picker-select";
+import { Picker } from "@react-native-picker/picker";
 import {
   StyleSheet,
   View,
@@ -7,7 +9,7 @@ import {
   Image,
   Button,
 } from "react-native";
-import React, { useContext, useState } from "react";
+import React, { useCallback, useContext, useRef, useState } from "react";
 import ScreenWrapper from "@/components/ScreenWrapper";
 import {
   IconButton,
@@ -34,9 +36,18 @@ import {
 import type { FunctionComponent } from "react";
 import { GestureHandlerRootView, State } from "react-native-gesture-handler";
 import { DraggableGridExample } from "@/components/DraggableGridExample";
+import {
+  BottomSheetModal,
+  BottomSheetModalProvider,
+  BottomSheetView,
+} from "@gorhom/bottom-sheet";
 
 const Settings = () => {
   const theme = useTheme();
+  const open = useSharedValue(false);
+  const onPress = () => {
+    open.value = !open.value;
+  };
 
   const [loopOrPlay, setLoopOrPlay] = useState("loop");
 
@@ -75,81 +86,149 @@ const Settings = () => {
     }
   };
 
+  const [selectedLanguage, setSelectedLanguage] = useState();
+  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+  const handlePresentModalPress = useCallback(() => {
+    bottomSheetModalRef.current?.present();
+  }, []);
+  const handleSheetChanges = useCallback((index: number) => {
+    console.log("handleSheetChanges", index);
+  }, []);
+
   return (
     <ScreenWrapper>
-      <View style={{ paddingHorizontal: wp(4) }}>
-        {/* <UserHeader
+      <BottomSheetModalProvider>
+        <View style={{ paddingHorizontal: wp(4) }}>
+          {/* <UserHeader
                   user={user}
                   router={router}
                   handleLogout={handleLogout}
                 /> */}
-        {/* DEBUG */}
-        {/* <Text>Token: {expoPushToken?.data ?? ""}</Text> */}
-        {/* <Text>{data}</Text> */}
+          {/* DEBUG */}
+          {/* <Text>Token: {expoPushToken?.data ?? ""}</Text> */}
+          {/* <Text>{data}</Text> */}
 
-        <View style={styles.section}>
-          <Text
-            style={[
-              styles.sectionTitle,
-              {
-                color: theme.colors.secondary,
-              },
-            ]}
-          >
-            General
-          </Text>
+          <View style={styles.section}>
+            <Text
+              style={[
+                styles.sectionTitle,
+                {
+                  color: theme.colors.secondary,
+                },
+              ]}
+            >
+              General
+            </Text>
 
-          <View
-            style={[
-              styles.row,
-              { backgroundColor: theme.colors.elevation.level3 },
-            ]}
-          >
-            <View style={[styles.rowIcon, { backgroundColor: "#FE9400" }]}>
-              <IconButton iconColor="#fff" icon="eye" size={20} />
+            <View
+              style={[
+                styles.row,
+                { backgroundColor: theme.colors.elevation.level3 },
+              ]}
+            >
+              <View style={[styles.rowIcon, { backgroundColor: "#FE9400" }]}>
+                <IconButton iconColor="#fff" icon="eye" size={20} />
+              </View>
+              {/* <Text style={styles.rowLabel}>Language</Text> */}
+              <Text style={{ color: theme.colors.secondary }}>Sounds on</Text>
+              <View style={styles.rowSpacer} />
+              <Switch
+                style={{ marginRight: 10 }}
+                value={appSettings.soundOn} // Default to true if undefined
+                onValueChange={(value) => setSettings("soundOn", value)}
+              />
             </View>
-            {/* <Text style={styles.rowLabel}>Language</Text> */}
-            <Text style={{ color: theme.colors.secondary }}>Sound on</Text>
-            <View style={styles.rowSpacer} />
-            {/* <Switch
-              style={{ marginRight: 10 }}
-              value={appSettings.soundOn ?? true} // Default to true if undefined
-              onValueChange={(value) => setSettings("soundOn", value)}
-            /> */}
-          </View>
 
-          {/* /**
+            {/* /**
           |--------------------------------------------------
           | Notation settings
           |--------------------------------------------------
            */}
-          <View
-            style={[
-              styles.row,
-              { backgroundColor: theme.colors.elevation.level3 },
-            ]}
-          >
-            <View style={[styles.rowIcon, { backgroundColor: "#FE9400" }]}>
-              <IconButton iconColor="#fff" icon="pencil" size={20} />
-            </View>
-            {/* <Text style={styles.rowLabel}>Language</Text> */}
-            <Text style={{ color: theme.colors.secondary }}>Notation</Text>
-            <View />
-            <TouchableOpacity onPress={() => setSettings("notation", "numpad")}>
-              <ThemedText style={{ fontWeight: "600" }}>5K</ThemedText>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{ padding: 8 }}
-              onPress={() => setSettings("notation", "icon")}
+            <View
+              style={[
+                styles.row,
+                { backgroundColor: theme.colors.elevation.level3 },
+              ]}
             >
-              <Image
-                source={require("@/assets/images/buttons/MK.png")}
-                style={{ height: "100%", resizeMode: "contain" }}
-              />
-            </TouchableOpacity>
+              <View style={[styles.rowIcon, { backgroundColor: "#FE9400" }]}>
+                <IconButton iconColor="#fff" icon="pencil" size={20} />
+              </View>
+              {/* <Text style={styles.rowLabel}>Language</Text> */}
+              <Text style={{ color: theme.colors.secondary }}>Notation</Text>
+              <View style={styles.rowSpacer} />
+
+              <View style={{ flex: 1.5 }}>
+                <SegmentedButtons
+                  // style={{ justifyContent: "center", alignItems: "center" }}
+                  value={appSettings.notation}
+                  onValueChange={(value) => setSettings("notation", value)}
+                  buttons={[
+                    {
+                      value: "default",
+                      label: "Transit",
+                      icon: () => (
+                        <Image
+                          source={require("@/assets/images/buttons/MK.png")}
+                          style={{ height: 20, resizeMode: "contain" }}
+                        />
+                      ),
+                    },
+                    {
+                      value: "numpad",
+                      label: "1MK",
+                    },
+                  ]}
+                />
+              </View>
+            </View>
+
+            {/* Straight-shot or Loop */}
+            <View
+              style={[
+                styles.row,
+                { backgroundColor: theme.colors.elevation.level3 },
+              ]}
+            >
+              <View style={[styles.rowIcon, { backgroundColor: "#FE9400" }]}>
+                <IconButton iconColor="#fff" icon="eye" size={20} />
+              </View>
+              {/* <Text style={styles.rowLabel}>Language</Text> */}
+              <Text style={{ color: theme.colors.secondary }}>Playback</Text>
+              <View style={styles.rowSpacer} />
+              {/* <Switch
+                style={{ marginRight: 10 }}
+                value={appSettings?.loopOrPlayOnce === "loop" ? true : false} // Default to true if undefined
+                onValueChange={(value) => setSettings("loopOrPlay", value)} */}
+              {/* /> */}
+
+              <View style={{ flex: 1.5 }}>
+                <SegmentedButtons
+                  value={appSettings.loopOrPlayOnce}
+                  onValueChange={(value) =>
+                    setSettings("loopOrPlayOnce", value)
+                  }
+                  buttons={[
+                    {
+                      value: "loop",
+                      label: "Loop",
+                      labelStyle: { fontSize: 10 },
+                    },
+                    {
+                      value: "once",
+                      label: "Play once",
+                      labelStyle: { fontSize: 8 },
+                    },
+                  ]}
+                />
+              </View>
+            </View>
           </View>
 
-          {/* Straight-shot or Loop */}
+          {/* /**
+          |--------------------------------------------------
+          | Button mapping
+          |--------------------------------------------------
+           */}
           <View
             style={[
               styles.row,
@@ -159,35 +238,70 @@ const Settings = () => {
             <View style={[styles.rowIcon, { backgroundColor: "#FE9400" }]}>
               <IconButton iconColor="#fff" icon="eye" size={20} />
             </View>
-            {/* <Text style={styles.rowLabel}>Language</Text> */}
             <Text style={{ color: theme.colors.secondary }}>
-              Play once/loop video
+              Button Mapping
             </Text>
             <View style={styles.rowSpacer} />
-            <Switch
-              style={{ marginRight: 10 }}
-              value={appSettings?.loopOrPlayOnce === "loop" ? true : false} // Default to true if undefined
-              onValueChange={(value) => setSettings("loopOrPlay", value)}
-            />
+            <IconButton icon={"arrow-right"} onPress={onPress} />
           </View>
-        </View>
-      </View>
 
-      {/* /**
-          |--------------------------------------------------
-          | Button mapping
-          |--------------------------------------------------
-           */}
-      <GestureHandlerRootView>
-        <DraggableGridExample />
-      </GestureHandlerRootView>
+          {/* <Button
+            onPress={handlePresentModalPress}
+            title="Present Modal"
+            color="black"
+          /> */}
+          {/* <BottomSheetModal
+            style={{
+              shadowColor: "#000",
+              shadowOffset: {
+                width: 0,
+                height: 5,
+              },
+              shadowOpacity: 0.36,
+              shadowRadius: 6.68,
+
+              elevation: 11,
+              borderRadius: 50,
+            }}
+            ref={bottomSheetModalRef}
+            onChange={handleSheetChanges}
+          >
+            <BottomSheetView
+              style={{
+                height: 400,
+                alignItems: "center",
+              }}
+            >
+              <RNPickerSelect
+                onValueChange={(value) => console.log(value)}
+                items={[
+                  { label: "Football", value: "football" },
+                  { label: "Baseball", value: "baseball" },
+                  { label: "Hockey", value: "hockey" },
+                ]}
+              />
+            </BottomSheetView>
+          </BottomSheetModal> */}
+
+          <AccordionItem isExpanded={open} viewKey="Accordion">
+            {/* <RNPickerSelect
+              onValueChange={(value) => console.log(value)}
+              items={[
+                { label: "Football", value: "football" },
+                { label: "Baseball", value: "baseball" },
+                { label: "Hockey", value: "hockey" },
+              ]}
+            /> */}
+            {/* <DraggableGridExample /> */}
+            {/* <View style={styles.exampleBox} /> */}
+          </AccordionItem>
+        </View>
+      </BottomSheetModalProvider>
     </ScreenWrapper>
   );
 };
 
 export default Settings;
-
-//   {/* When pressing a timer, it goes to page and doesn't let you SWIPE back, but there's a Back button at the top left */}
 
 const styles = StyleSheet.create({
   textHeader: { fontSize: 42 },
@@ -326,5 +440,20 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "darkseagreen",
+  },
+  parent: { width: 200 },
+  exampleBox: {
+    height: 120,
+    width: 120,
+    color: "#f8f9ff",
+    backgroundColor: "#b58df1",
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  content: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

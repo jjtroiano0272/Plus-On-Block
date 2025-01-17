@@ -1,96 +1,59 @@
+// import Picker from "@/components/Picker__Candillon/Picker";
+import IndicatorExample from "@/components/Picker_Medium/Picker";
+import Picker from "./Picker__Miron/Picker";
+// import Picker from "react-native-picker-horizontal";
 import * as Haptics from "expo-haptics";
-import HorizontalPicker from "react-native-number-horizontal-picker";
-// import FloatingActionButton from "@/components/FloatingActionButton";
-// import Slider from "@/components/Slider";
-import { Slider } from "react-native-awesome-slider";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Dimensions,
-  Alert,
-  Pressable,
-} from "react-native";
-import React, { useContext, useEffect, useRef, useState } from "react";
+import { Text, Image, StyleSheet, Alert, Pressable, View } from "react-native";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { ResizeMode, Video } from "expo-av";
 import { AppSettingsContext } from "@/context/AppSettings";
-import { IconButton } from "react-native-paper";
-import Animated, {
-  interpolate,
-  SharedValue,
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withSpring,
-  withTiming,
-} from "react-native-reanimated";
-import BottomRowTools from "./BottomRowTools";
-import MainRowActions from "./MainRowActions";
+import { Avatar, Icon, IconButton, useTheme } from "react-native-paper";
+import { useSharedValue } from "react-native-reanimated";
 import { router } from "expo-router";
-import { FRAME_DATA } from "@/constants/frameData";
 import { useAnswers } from "@/context/AnswerContext";
-import { printFrameAdvantage } from "@/helpers/common";
-import CandillonSlider from "./CandillonSlider";
-import { SliderWithLottie } from "./SliderWithLottie";
-import DiscreteSlider from "./RNAS_Examples/with-step";
-
-const closeButtonHitSlop = 30;
-const SCREEN_WIDTH = Dimensions.get("window").width;
+import {
+  buttonIcons,
+  hitSlop30,
+  hp,
+  SCREEN_HEIGHT,
+  wp,
+} from "@/helpers/common";
+import DiscreteSlider from "./RNAS_Examples/DiscreteSlider";
+import DirectionalSelector from "./LeverAndButtons";
+import LeverAndButtons from "./LeverAndButtons";
+import { CHARACTER_AVATARS } from "@/constants/charAvatars";
+import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import ScreenWrapper from "./ScreenWrapper";
 
 const QuizCard = ({
   videoUri,
-  shouldPlay,
+  isViewable,
   isAd,
+  submitAnswerBubble,
+  remoteVideoUri,
 }: {
-  videoUri: any;
-  shouldPlay: boolean;
+  videoUri?: any;
+  isViewable: boolean;
   isAd?: boolean;
+  submitAnswerBubble: (answer: number) => void;
+  remoteVideoUri?: string;
 }) => {
+  const theme = useTheme();
   const { appSettings } = useContext(AppSettingsContext);
   const {
-    submittedAnswer,
-    correctAnswer,
     setCorrectAnswer,
     setSubmittedAnswer,
+    numAnswered,
+    selectedCharacter,
   } = useAnswers();
   const videoRef = useRef<Video>(null);
-  const progress = useSharedValue(50);
-  const min = useSharedValue(0);
-  const max = useSharedValue(100);
   const [selectedNum, setSelectedNum] = useState(0);
-
-  useEffect(() => {
-    videoRef.current?.setIsMutedAsync(true);
-    if (shouldPlay) {
-      videoRef.current?.playAsync();
-    } else {
-      videoRef.current?.stopAsync();
-    }
-  }, [shouldPlay]);
-
-  const submitAnswer = (answer: number) => {
-    let fullObj = FRAME_DATA.find((e) => e.video === videoUri);
-    let res = FRAME_DATA?.find((e) => e?.video === videoUri)?.advantage;
-
-    if (res) {
-      // previously on
-      // setSubmittedAnswer(answer);
-      // setCorrectAnswer(-res);
-
-      // setCurrentIndex(index); // Optionally update the parent state if needed
-
-      let userAnswer = answer.toString();
-      let correctAnswer = (-res).toString();
-
-      if (userAnswer === correctAnswer) {
-        setSubmittedAnswer(userAnswer);
-        setCorrectAnswer(correctAnswer);
-      } else {
-        setSubmittedAnswer(userAnswer);
-        setCorrectAnswer(correctAnswer);
-      }
-    }
-  };
 
   const handleGoBack = () => {
     Alert.alert(
@@ -107,155 +70,153 @@ const QuizCard = ({
         {
           text: "Go back",
           onPress: () => {
-            router.replace("/(main)/charSelect");
+            // Probably get numAnswered from context
+            if (numAnswered === 0) {
+              router.replace("/(main)/charSelect");
+            } else if (numAnswered >= 20) {
+              // if you've answered more than 20 questions, go to ad, then reset counter
+              router.replace("/(main)/advertisement");
+            } else {
+              router.replace("/(main)/summary");
+            }
           },
         },
       ]
     );
   };
 
+  useEffect(() => {
+    // videoRef.current?.setIsMutedAsync(true);
+    if (isViewable) {
+      videoRef.current?.playAsync();
+    } else {
+      videoRef.current?.stopAsync();
+    }
+
+    console.log(`isViewable: ${JSON.stringify(isViewable, null, 2)}`);
+  }, [isViewable]);
+
+  const [currentStep, setCurrentStep] = useState(1);
+  const [showFollowUp, setShowFollowUp] = useState(true);
+
+  const bottomSheetRef = useRef<BottomSheet>(null);
+  const handleSheetChanges = useCallback((index: number) => {
+    console.log("handleSheetChanges", index);
+  }, []);
+
+  const Items = Array.from(Array(30).keys());
+  const itemWidth = 50;
+
+  const start = 1900;
+  const defaultValue = 1990 - start;
+  const values = new Array(new Date().getFullYear() - start + 1)
+    .fill(0)
+    .map((_, i) => {
+      const value = start + i;
+      return { value, label: `${value}` };
+    })
+    .reverse();
+
   return (
-    <Pressable
-      style={styles.container}
-      onPress={() => {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-
-        submitAnswer(selectedNum);
-      }}
-    >
-      <Video
-        style={!isAd ? styles.smallVideo : styles.fullVideo}
-        ref={videoRef}
-        source={videoUri}
-        resizeMode={ResizeMode.COVER}
-        shouldPlay
-        isMuted={!isAd ? true : false}
-        isLooping={appSettings.loopOrPlayOnce !== "loop" ? true : false}
-      />
-      {/* <BottomRowTools /> */}
-      {/* <MainRowActions onPress={handleAnswer} /> */}
-
-      {!isAd && (
-        <Pressable
-          style={styles.sliderContainer}
-          onPress={() => {
-            console.log("\x1b[32m" + "hi. Pressed slider container");
-          }}
-        >
-          {/* <Slider
-            progress={progress}
-            minimumValue={min}
-            maximumValue={max}
-            onHapticFeedback={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            }}
-            hapticMode="step"
-            steps={20}
-            markStyle={{
-              width: 4,
-              height: 4,
-              backgroundColor: "#fff",
-              position: "absolute",
-              top: 50,
-            }}
-            renderBubble={() => (
-              <View
-                style={{
-                  borderRadius: 20,
-                  height: 100,
-                  width: 100,
-                  backgroundColor: progress.value < 50 ? "red" : "blue",
-                }}
-              >
-                <Text>{progress.value}</Text>
-              </View>
-            )}
-            bubbleContainerStyle={{
-              height: 100,
-              width: 100,
-            }}
-            bubbleTextStyle={{ fontSize: 40 }}
-            bubble={(s) => formatFrameAdv(s)}
-            bubbleTranslateY={-50}
-            bubbleWidth={120}
-            forceSnapToStep
-            containerStyle={{
-              width: SCREEN_WIDTH * 0.8,
-              // width: "100%",
-              height: 50,
-              borderRadius: 2,
-              borderColor: "transparent",
-              overflow: "hidden",
-              borderWidth: 1,
-            }}
-            style={{
-              backgroundColor: "#ccc",
-              borderRadius: 15,
-              padding: 20,
-            }}
-          /> */}
-          {/* <CandillonSlider /> */}
-          {/* <SliderWithLottie /> */}
-          <DiscreteSlider setSelectedNum={setSelectedNum} />
-        </Pressable>
-      )}
-
+    <ScreenWrapper>
       <Pressable
-        style={{
-          position: "absolute",
-          top: 40,
-          left: 15,
-          width: "100%",
-        }}
-        onPress={handleGoBack}
-        hitSlop={{
-          top: closeButtonHitSlop,
-          right: closeButtonHitSlop,
-          bottom: closeButtonHitSlop,
-          left: closeButtonHitSlop,
+        style={styles.container}
+        onPress={() => {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          if (showFollowUp && currentStep === 1) {
+            setCurrentStep(2);
+          } else {
+            // submitAnswer(selectedNum);
+            submitAnswerBubble(selectedNum);
+          }
         }}
       >
-        <IconButton onPress={handleGoBack} icon={"close"} />
+        <View style={styles.header}>
+          <IconButton
+            onPress={handleGoBack}
+            icon={"close"}
+            hitSlop={hitSlop30}
+            // style={styles.closeButton}
+          />
+          <Avatar.Image
+            size={42}
+            source={
+              CHARACTER_AVATARS?.find((x) => x.name === selectedCharacter)
+                ?.image
+            }
+            style={{ borderRadius: 10 }}
+          />
+        </View>
+        {/* =====================================================================================
+        === Top PArt =============================================
+        ========================================================================================= */}
+        <View
+          style={styles.videoContainer}
+          // hitSlop={hitSlop30}
+        >
+          <View style={styles.video}>
+            <Video
+              style={styles.smallVideo}
+              ref={videoRef}
+              source={{
+                uri: "https://gizdlefrudtlzzlsdhyk.supabase.co/storage/v1/object/public/video/Ryu_5LP.mov",
+              }}
+              resizeMode={ResizeMode.COVER}
+              shouldPlay={true}
+              isMuted={true}
+              isLooping={appSettings.loopOrPlayOnce == "loop" ? true : false}
+            />
+          </View>
+        </View>
+
+        {/* =====================================================================================
+            === Bottom part =============================================
+            ========================================================================================= */}
+        <View style={styles.endContainer}>
+          {/* <DiscreteSlider
+            setSelectedNum={setSelectedNum}
+            selectedNum={selectedNum}
+          /> */}
+          <View
+            style={{
+              backgroundColor: "turquoise",
+              marginHorizontal: wp(4),
+              borderRadius: 20,
+            }}
+          >
+            <Picker />
+          </View>
+        </View>
+
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <Icon source={"chevron-down"} size={24} />
+        </View>
       </Pressable>
-    </Pressable>
+    </ScreenWrapper>
   );
 };
 
 export default QuizCard;
 
-const mainButtonStyles = StyleSheet.create({
-  button: {
-    zIndex: 1,
-    height: 56,
-    width: 56,
-    borderRadius: 100,
-    backgroundColor: "#b58df1",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  content: {
-    fontSize: 24,
-    color: "#f8f9ff",
-  },
-});
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center", // originally flex-end
-    alignItems: "center",
+    // justifyContent: "center", // originally flex-end
+    // alignItems: "center",
     // backgroundColor: "black",
-    position: "relative",
+    // position: "relative",
+    // paddingHorizontal: wp(4),
   },
   smallVideo: {
-    position: "absolute",
-    // top: 0,
+    // position: "absolute",
+    // top: 20,
     // left: 0,
-    justifyContent: "center",
+    // justifyContent: "center",
 
-    width: "95%", // set to 100 to make full screen video
-    height: "40%", // Fullscreen video
+    width: "100%", // set to 100 to make full screen video
+    height: "100%", // Fullscreen video
     borderRadius: 20,
   },
   fullVideo: {
@@ -309,12 +270,54 @@ const styles = StyleSheet.create({
     bottom: 6,
   },
   sliderContainer: {
-    width: "100%",
     // flexDirection: "row",
+    borderRadius: 20,
+    width: "100%",
     alignItems: "center",
     justifyContent: "center",
     position: "absolute",
     bottom: 45,
-    height: 100,
+    height: 200,
+  },
+  closeButtonContainer: {
+    flexDirection: "row",
+    position: "absolute",
+    top: 40,
+    left: 15,
+    width: "100%",
+    justifyContent: "space-between",
+  },
+  closeButton: {
+    position: "absolute",
+    top: 10,
+    left: 10,
+    zIndex: 1,
+  },
+
+  videoContainer: {
+    flex: 4,
+    position: "relative",
+    // backgroundColor: "#cccccc50", // Placeholder color for the video section
+    paddingVertical: hp(5),
+    paddingHorizontal: wp(4),
+  },
+  video: {
+    flex: 1,
+    // height: SCREEN_HEIGHT * 0.3
+  },
+
+  endContainer: {
+    flex: 4,
+    // backgroundColor: "red",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  header: {
+    flex: 1,
+    paddingHorizontal: wp(4),
+    // backgroundColor: "white",
+    alignItems: "center",
+    justifyContent: "space-between",
+    flexDirection: "row",
   },
 });
