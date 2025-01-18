@@ -9,16 +9,21 @@ import { useFonts } from "expo-font";
 import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Avatar, IconButton, PaperProvider } from "react-native-paper";
 import tamaguiConfig from "@/tamagui.config";
-import { AppSettingsContextProvider } from "@/context/AppSettings";
+import {
+  AppSettingsContext,
+  AppSettingsContextProvider,
+} from "@/context/AppSettings";
 import { AnswerProvider } from "@/context/AnswerContext";
-import { View } from "react-native";
+import { Button, View } from "react-native";
+import React from "react";
+import SpringButton from "@/components/SpringButton";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -83,9 +88,29 @@ const MainLayout = () => {
     console.log(`Null here....`);
   }
 
+  const { appSettings } = useContext(AppSettingsContext);
+
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="(main)/ONE_TO_ONE"
+        options={{
+          headerShown: appSettings.headerShown,
+          title: "My home",
+          headerStyle: {
+            backgroundColor: "#f4511e",
+          },
+          headerTintColor: "#fff",
+          headerTitleStyle: {
+            fontWeight: "bold",
+          },
+          // headerLeft: () => (
+          //   <SpringButton onPress={() => alert("This is a button!")}>
+          //     Info
+          //   </SpringButton>
+          // ),
+        }}
+      />
       {/* <Stack.Screen
         name="(main)/DEBUG"
         options={{

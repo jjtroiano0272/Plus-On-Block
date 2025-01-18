@@ -41,6 +41,7 @@ import Animated, {
 } from "react-native-reanimated";
 import ScrollableSelector from "@/components/ScrollableSelector";
 import Loading from "@/components/Loading";
+import HeartbeatButton from "@/components/HeartbeatButton";
 
 const minVal = -10;
 const segmentsLength = 21;
@@ -294,13 +295,16 @@ const DEBUG = () => {
     <View style={styles.section}>
       {/* <ThemedText style={{ fontSize: 10 }}>{JSON.stringify(item)}</ThemedText> */}
 
-      <IconButton
+      {/* <IconButton
         icon={"reload"}
         onPress={
           // getVideos
           renameStorageFiles
         }
-      />
+      /> */}
+      <HeartbeatButton onPress={() => console.log("pressed")}>
+        Press Me
+      </HeartbeatButton>
       {/* <Text style={styles.sectionTitle}>Section {index + 1}</Text> */}
 
       {/* VIDEO */}

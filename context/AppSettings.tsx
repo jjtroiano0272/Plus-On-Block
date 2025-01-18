@@ -8,6 +8,7 @@ interface SettingsContextType {
     inputConfig: string[][];
     loopOrPlayOnce: "loop" | "once";
     notation: "default" | "numpad";
+    headerShown: boolean;
   };
   appSettingsInitialized: boolean;
   setSettings: (key: string, value: any) => void;
@@ -23,6 +24,7 @@ const defaultValues: SettingsContextType = {
     ],
     loopOrPlayOnce: "loop",
     notation: "default",
+    headerShown: true,
   },
   appSettingsInitialized: false,
   setSettings: () => {
